@@ -16,10 +16,7 @@
   command: './mvnw clean package -pl collectors/build/jenkins docker:build'
   args:
     chdir: "/opt/Hygieia"
-
-# - name: Run the Hygieia Jenkins Collector Docker Image
-#   command: 'docker run -d -t --name jenkins-collector -e "MONGO_PORT={{ MONGODB_PROTOCOL }}://{{ ansible_default_ipv4.address }}:{{ MONGODB_PORT }}" -e "HYGIEIA_API_ENV_SPRING_DATA_MONGODB_DATABASE={{ HYGIEIA_DB_NAME }}" -e "HYGIEIA_API_ENV_SPRING_DATA_MONGODB_USERNAME={{ HYGIEIA_DB_USERNAME }}" -e "HYGIEIA_API_ENV_SPRING_DATA_MONGODB_PASSWORD={{ HYGIEIA_DB_PASSWORD }}" -e "JENKINS_MASTER={{ JENKINS_URL }}" hygieia-jenkins-build-collector:latest'
-
+    
 - name: Create Jenkins Collector Container
   docker_container:
     name: jenkins-collector
