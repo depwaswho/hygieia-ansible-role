@@ -1,0 +1,42 @@
+---
+
+- name: Remove Sonarqube Collector Container if exists
+  docker_container:
+    name: sonarqube-collector
+    image: "latest"
+    state: absent
+
+- name: Remove Sonarqube Collector Image if exists
+  docker_image:
+    state: absent
+    name: hygieia-sonar-codequality-collector
+    tag: latest
+
+- name: Build Docker Image for Sonarqube Collector
+  command: './mvnw clean package -pl collectors/build/sonar/ docker:build'
+  args:
+    chdir: "/opt/Hygieia"
+
+# - name: Run Sonarqube Collector Docker Image
+#   command: 'docker run -d -t --name sonarqube-collector -e "MONGO_PORT={{ MONGODB_PROTOCOL }}://{{ ansible_default_ipv4.address }}:{{ MONGODB_PORT }}" -e "HYGIEIA_API_ENV_SPRING_DATA_MONGODB_DATABASE={{ HYGIEIA_DB_NAME }}" -e "HYGIEIA_API_ENV_SPRING_DATA_MONGODB_USERNAME={{ HYGIEIA_DB_USERNAME }}" -e "HYGIEIA_API_ENV_SPRING_DATA_MONGODB_PASSWORD={{ HYGIEIA_DB_PASSWORD }}" -e "SONAR_URL={{ SONARQUBE_URL }}" -e "SONAR_USERNAME={{ SONARQUBE_USERNAME }}" -e "SONAR_PASSWORD={{ SONARQUBE_PASSWORD }}" -e "SONAR_VERSION={{ SONARQUBE_VERSION }}" -e "SONAR_METRICS={{ SONARQUBE_METRICS }}" hygieia-sonar-codequality-collector:latest'
+ 
+- name: Create Sonarqube Collector Container
+  docker_container:
+    name: sonarqube-collector
+    image: hygieia-sonar-codequality-collector:latest
+    state: present
+    env:
+        MONGO_PORT: "{{ MONGODB_PROTOCOL }}://{{ ansible_default_ipv4.address }}:{{ MONGODB_PORT }}"
+        HYGIEIA_API_ENV_SPRING_DATA_MONGODB_DATABASE: "{{ HYGIEIA_DB_NAME }}"
+        HYGIEIA_API_ENV_SPRING_DATA_MONGODB_USERNAME: "{{ HYGIEIA_DB_USERNAME }}"
+        HYGIEIA_API_ENV_SPRING_DATA_MONGODB_PASSWORD: "{{ HYGIEIA_DB_PASSWORD }}"
+        SONAR_URL: "{{ SONARQUBE_URL }}"
+        SONAR_USERNAME: "{{ SONARQUBE_USERNAME }}"
+        SONAR_PASSWORD: "{{ SONARQUBE_PASSWORD }}"
+        SONAR_VERSION: "{{ SONARQUBE_VERSION }}"
+        SONAR_METRICS: "{{ SONARQUBE_METRICS }}"
+
+- name: Start Sonarqube Container
+  docker_container:
+    name: sonarqube-collector
+    state: started

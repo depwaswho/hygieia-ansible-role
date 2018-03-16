@@ -1,0 +1,8 @@
+---
+
+- name: Install Docker
+  yum: name=docker state=present
+
+- name: Run Docker
+  service: name=docker state=started enabled=yes
+  tags: docker

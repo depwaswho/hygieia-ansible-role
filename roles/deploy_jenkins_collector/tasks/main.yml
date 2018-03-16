@@ -1,0 +1,38 @@
+---
+
+- name: Remove Jenkins Collector Container if exists
+  docker_container:
+    name: jenkins-collector
+    image: "latest"
+    state: absent
+
+- name: Remove Jenkins Collector Image if exists
+  docker_image:
+    state: absent
+    name: hygieia-jenkins-build-collector
+    tag: latest
+
+- name: Build Docker Image for Hygieia Jenkins Collector
+  command: './mvnw clean package -pl collectors/build/jenkins docker:build'
+  args:
+    chdir: "/opt/Hygieia"
+
+# - name: Run the Hygieia Jenkins Collector Docker Image
+#   command: 'docker run -d -t --name jenkins-collector -e "MONGO_PORT={{ MONGODB_PROTOCOL }}://{{ ansible_default_ipv4.address }}:{{ MONGODB_PORT }}" -e "HYGIEIA_API_ENV_SPRING_DATA_MONGODB_DATABASE={{ HYGIEIA_DB_NAME }}" -e "HYGIEIA_API_ENV_SPRING_DATA_MONGODB_USERNAME={{ HYGIEIA_DB_USERNAME }}" -e "HYGIEIA_API_ENV_SPRING_DATA_MONGODB_PASSWORD={{ HYGIEIA_DB_PASSWORD }}" -e "JENKINS_MASTER={{ JENKINS_URL }}" hygieia-jenkins-build-collector:latest'
+
+- name: Create Jenkins Collector Container
+  docker_container:
+    name: jenkins-collector
+    image: hygieia-jenkins-build-collector:latest
+    state: present
+    env:
+        MONGO_PORT: "{{ MONGODB_PROTOCOL }}://{{ ansible_default_ipv4.address }}:{{ MONGODB_PORT }}"
+        HYGIEIA_API_ENV_SPRING_DATA_MONGODB_DATABASE: "{{ HYGIEIA_DB_NAME }}"
+        HYGIEIA_API_ENV_SPRING_DATA_MONGODB_USERNAME: "{{ HYGIEIA_DB_USERNAME }}"
+        HYGIEIA_API_ENV_SPRING_DATA_MONGODB_PASSWORD: "{{ HYGIEIA_DB_PASSWORD }}"
+        JENKINS_MASTER: "{{ JENKINS_URL }}"
+
+- name: Start Jenkins Container
+  docker_container:
+    name: jenkins-collector
+    state: started

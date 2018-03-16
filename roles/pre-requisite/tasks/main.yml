@@ -1,0 +1,17 @@
+---
+
+- name: Update All Package
+  yum: name=* state=latest
+
+- name: Epel Release
+  yum: name=epel-release state=present
+
+- include: jdk.yml
+- include: maven.yml
+- include: bzip2.yml
+- include: git.yml
+- include: docker.yml
+- include: nodejs.yml
+- include: bower.yml
+- include: gulp.yml
+- include: docker-py.yml

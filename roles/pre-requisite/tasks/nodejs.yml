@@ -1,0 +1,4 @@
+---
+
+- name: Install Nodejs
+  yum: name=nodejs state=present

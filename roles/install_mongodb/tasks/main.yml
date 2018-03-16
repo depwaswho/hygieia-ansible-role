@@ -1,0 +1,15 @@
+---
+- name: Add MongoDB repo file
+  template: src=repo.j2 dest=/etc/yum.repos.d/mongodb-org-3.6.repo
+
+- name: Install MongoDB
+  yum: name=mongodb-org state=present
+
+- name: Install Python PIP
+  yum: name=python-pip state=present
+
+- name: Install the latest pymongo package
+  pip: name=pymongo state=latest use_mirrors=no
+
+- name: Run MongoDB
+  service: name=mongod state=started enabled=yes

@@ -1,0 +1,30 @@
+---
+
+- name: Create MongoDB admin user
+  mongodb_user:
+    database: "admin"
+    name: "{{ MONGODB_ADMIN_USERNAME }}"
+    password: "{{ MONGODB_ADMIN_PASSWORD }}"
+    roles: dbAdminAnyDatabase,userAdminAnyDatabase
+    state: present
+  ignore_errors: yes
+
+- name: Create app database and user
+  mongodb_user:
+    database: "{{ HYGIEIA_DB_NAME }}"
+    login_user: "{{ MONGODB_ADMIN_USERNAME }}"
+    login_password: "{{ MONGODB_ADMIN_PASSWORD }}"
+    user: "{{ HYGIEIA_DB_USERNAME }}"
+    password: "{{ HYGIEIA_DB_PASSWORD }}"
+    state: "present"
+    roles: readWrite
+  ignore_errors: yes
+
+- name: Secure MongoDB (Enable authentication)
+  template: src=mongod.conf.j2 dest=/etc/mongod.conf owner=root group=root mode=0644
+
+- name: Stop MongoDB
+  service: name=mongod state=stopped enabled=yes
+
+- name: Start MongoDB
+  service: name=mongod state=started enabled=yes

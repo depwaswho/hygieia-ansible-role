@@ -1,0 +1,6 @@
+---
+
+- name: Build Hygieia Packages
+  command: './mvnw clean install package'
+  args:
+    chdir: "/opt/Hygieia"

@@ -1,0 +1,35 @@
+---
+- name: Remove UI container if exists
+  docker_container:
+    name: hygieia-ui
+    image: "latest"
+    state: absent
+
+- name: Remove UI image if exists
+  docker_image:
+    state: absent
+    name: hygieia-ui
+    tag: latest
+
+- name: Build Docker Image for Hygieia UI
+  command: './mvnw clean package -pl UI docker:build'
+  args:
+    chdir: "/opt/Hygieia"
+    
+- name: Create UI Container
+  docker_container:
+    name: hygieia-ui
+    image: hygieia-ui:latest
+    state: present
+    links:
+      - "hygieia-api:api"
+    ports:
+      - "8088:80"
+    env:
+        API_HOST: "{{ ansible_default_ipv4.address }}"
+        API_PORT: "{{ API_PORT }}"
+
+- name: Start UI Container
+  docker_container:
+    name: hygieia-ui
+    state: started

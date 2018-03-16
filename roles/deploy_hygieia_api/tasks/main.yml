@@ -1,0 +1,41 @@
+---
+- name: Remove API container if exists
+  docker_container:
+    name: hygieia-api
+    image: "latest"
+    state: absent
+
+- name: Remove API image if exists
+  docker_image:
+    state: absent
+    name: hygieia-api
+    tag: latest
+
+- name: Build Docker Image for Hygieia API
+  command: './mvnw clean package -pl api docker:build'
+  args:
+    chdir: "/opt/Hygieia"
+
+- name: Create API Container
+  docker_container:
+    name: hygieia-api
+    image: hygieia-api:latest
+    state: present
+    ports:
+      - "8080:8080"
+    volumes:
+      - logs:/hygieia/logs
+    env:
+        SPRING_DATA_MONGODB_HOST: "{{ ansible_default_ipv4.address }}"
+        SPRING_DATA_MONGODB_USERNAME: "{{ HYGIEIA_DB_USERNAME }}"
+        SPRING_DATA_MONGODB_PASSWORD: "{{ HYGIEIA_DB_PASSWORD }}"
+        AUTH_AUTHENTICATION_PROVIDERS: "{{ AUTHENTICATION_PROVIDERS }}"
+        AUTH_LDAP_SERVER_URL: "{{ LDAP_SERVER_URL }}"
+        AUTH_LDAP_USER_DN_PATTERN: "{{ LDAP_USER_DN_PATTERN }}"
+        AUTH_LDAP_BIND_USER: "{{ LDAP_BIND_USER }}"
+        AUTH_LDAP_BIND_PASS: "{{ LDAP_BIND_PASS }}"
+
+- name: Start API Container
+  docker_container:
+    name: hygieia-api
+    state: started

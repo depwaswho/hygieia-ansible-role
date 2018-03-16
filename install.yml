@@ -1,0 +1,17 @@
+---
+
+- hosts: hygieia
+  become: true
+  become_user: root
+
+  roles:
+#    - pre-requisite
+#    - install_mongodb
+#    - mongodb_initial_setup
+#    - clone_hygieia
+#    - build_hygieia
+    - deploy_hygieia_api
+    - deploy_hygieia_ui
+    - deploy_jenkins_collector
+    - deploy_gitlab_collector
+    - deploy_sonarqube_collector

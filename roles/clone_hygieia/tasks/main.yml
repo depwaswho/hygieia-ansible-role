@@ -1,0 +1,13 @@
+---
+- name: Delete Hygieia Repository Folder if exist
+  file:
+    state: absent
+    path: "/opt/Hygieia"
+
+- name: Clone Hygieia
+  git:
+    repo: "https://github.com/depwaswho94/Hygieia.git"
+    dest: "/opt/Hygieia"
+
+- name: Replace UI pom.xml
+  template: src=pom.xml.j2 dest=/opt/Hygieia/UI/pom.xml owner=root group=root mode=0644

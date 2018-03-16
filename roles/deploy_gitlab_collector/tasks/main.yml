@@ -1,0 +1,41 @@
+---
+
+- name: Remove Gitlab Collector Container if exists
+  docker_container:
+    name: gitlab-collector
+    image: "latest"
+    state: absent
+
+- name: Remove Gitlab Collector Image if exists
+  docker_image:
+    state: absent
+    name: hygieia-gitlab-scm-collector
+    tag: latest
+
+- name: Build Docker Image for Hygieia Gitlab Collector
+  command: './mvnw clean package -pl collectors/scm/gitlab docker:build'
+  args:
+    chdir: "/opt/Hygieia"
+
+# - name: Run the Hygieia Gitlab Collector Docker Image
+#   command: 'docker run -d -t --name gitlab-collector -e "MONGO_PORT={{ MONGODB_PROTOCOL }}://{{ ansible_default_ipv4.address }}:{{ MONGODB_PORT }}" -e "HYGIEIA_API_ENV_SPRING_DATA_MONGODB_DATABASE={{ HYGIEIA_DB_NAME }}" -e "HYGIEIA_API_ENV_SPRING_DATA_MONGODB_USERNAME={{ HYGIEIA_DB_USERNAME }}" -e "HYGIEIA_API_ENV_SPRING_DATA_MONGODB_PASSWORD={{ HYGIEIA_DB_PASSWORD }}" -e "GITLAB_PROTOCOL={{ GITLAB_PROTOCOL }}" -e "GITLAB_HOST={{ GITLAB_HOST }}" -e "GITLAB_PORT={{ GITLAB_PORT }}" -e "GITLAB_API_TOKEN={{ API_TOKEN }}" hygieia-gitlab-scm-collector:latest'
+
+- name: Create Gitlab Collector Container
+  docker_container:
+    name: gitlab-collector
+    image: hygieia-gitlab-scm-collector:latest
+    state: present
+    env:
+        MONGO_PORT: "{{ MONGODB_PROTOCOL }}://{{ ansible_default_ipv4.address }}:{{ MONGODB_PORT }}"
+        HYGIEIA_API_ENV_SPRING_DATA_MONGODB_DATABASE: "{{ HYGIEIA_DB_NAME }}"
+        HYGIEIA_API_ENV_SPRING_DATA_MONGODB_USERNAME: "{{ HYGIEIA_DB_USERNAME }}"
+        HYGIEIA_API_ENV_SPRING_DATA_MONGODB_PASSWORD: "{{ HYGIEIA_DB_PASSWORD }}"
+        GITLAB_PROTOCOL: "{{ GITLAB_PROTOCOL }}"
+        GITLAB_HOST: "{{ GITLAB_HOST }}"
+        GITLAB_PORT: "{{ GITLAB_PORT }}"
+        GITLAB_API_TOKEN: "{{ API_TOKEN }}"
+
+- name: Start Gitlab Container
+  docker_container:
+    name: gitlab-collector
+    state: started
